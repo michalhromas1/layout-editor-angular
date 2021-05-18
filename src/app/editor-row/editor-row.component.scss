@@ -1,0 +1,6 @@
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: var(--editor-column-spacing);
+  column-gap: var(--editor-column-spacing);
+}
