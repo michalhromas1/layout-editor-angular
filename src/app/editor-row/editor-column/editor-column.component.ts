@@ -69,7 +69,7 @@ export class EditorColumnComponent implements OnInit {
     for (const row of rows) {
       const index = this.rowSlot.indexOf(row.hostView);
       this.rowSlot.detach(index);
-      firstColumn.instance.rowSlot.insert(row.hostView, index);
+      firstColumn.instance.rowSlot.insert(row.hostView);
     }
   }
 
