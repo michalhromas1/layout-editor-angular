@@ -1,9 +1,13 @@
+import { DOCUMENT } from '@angular/common';
 import {
   Component,
   ComponentFactoryResolver,
   ComponentRef,
   ElementRef,
+  HostListener,
+  Inject,
   OnInit,
+  Renderer2,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -18,13 +22,32 @@ export class EditorColumnComponent implements OnInit {
   @ViewChild('rowSlot', { read: ViewContainerRef, static: true })
   rowSlot: ViewContainerRef;
 
+  private readonly HOVERED_CLASS: string = 'hovered';
+
   private rows: ComponentRef<EditorRowComponent>[] = [];
-  private nativeElement: HTMLElement;
-  private readonly EDITOR_ROW_SELECTOR = 'app-editor-row';
+  private nativeElement: Element;
+
+  @HostListener('mouseover', ['$event']) onMouseEnter(e: MouseEvent) {
+    e.stopPropagation();
+
+    const hoveredColumn = this.document.querySelector(`.${this.HOVERED_CLASS}`);
+
+    if (hoveredColumn) {
+      this.renderer.removeClass(hoveredColumn, this.HOVERED_CLASS);
+    }
+
+    this.renderer.addClass(this.nativeElement, this.HOVERED_CLASS);
+  }
+
+  @HostListener('mouseleave') onMouseLeave() {
+    this.renderer.removeClass(this.nativeElement, this.HOVERED_CLASS);
+  }
 
   constructor(
+    @Inject(DOCUMENT) private document: Document,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private renderer: Renderer2
   ) {}
 
   ngOnInit(): void {
@@ -32,9 +55,7 @@ export class EditorColumnComponent implements OnInit {
   }
 
   addRow(): void {
-    const hasRows = !!this.nativeElement.querySelector(
-      this.EDITOR_ROW_SELECTOR
-    );
+    const hasRows = !!this.rows.length;
 
     if (!hasRows) {
       this.createRow();
