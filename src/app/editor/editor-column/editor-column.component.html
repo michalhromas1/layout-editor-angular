@@ -1,0 +1,11 @@
+<ng-container #slot></ng-container>
+<button (click)="addColumn()" class="add-column" type="button">C+</button>
+<button
+  *ngIf="!isRootComponent"
+  (click)="deleteColumn()"
+  class="delete-column"
+  type="button"
+>
+  C-
+</button>
+<button (click)="addRow()" class="add-row" type="button">R+</button>
