@@ -1,0 +1,44 @@
+:host {
+  position: relative;
+  background: lightgray;
+  border: 3px solid darkblue;
+  padding: var(--editor-column-spacing);
+  display: grid;
+  flex: 1;
+  row-gap: var(--editor-column-spacing);
+  column-gap: var(--editor-column-spacing);
+
+  &.hovered {
+    border-color: darkorange;
+  }
+
+  &.hovered > button {
+    display: block;
+  }
+}
+
+button {
+  position: absolute;
+  border-radius: 100%;
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  z-index: 10;
+  // display: none;
+  cursor: pointer;
+
+  &.add-column {
+    right: 0;
+    top: 0;
+    transform: translate(50%, -50%);
+  }
+
+  &.add-row {
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, +50%);
+  }
+}
