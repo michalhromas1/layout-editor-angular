@@ -1,0 +1,31 @@
+:host {
+  display: block;
+}
+
+:host ::ng-deep .content-item,
+::ng-deep .cdk-drag-preview {
+  border: 3px solid darkgreen;
+  background: lightgreen;
+  height: 5rem;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  min-width: 10rem;
+}
+
+::ng-deep .cdk-drag-preview {
+  opacity: 0.5;
+  max-width: 20rem;
+}
+
+button {
+  margin-left: auto;
+  display: block;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+  column-gap: 2rem;
+  align-items: flex-start;
+}

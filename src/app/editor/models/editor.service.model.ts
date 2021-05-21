@@ -5,6 +5,7 @@ import { EditorComponentModel } from './editor.component.model';
 
 export interface EditorServiceModel {
   editorTree: Readonly<TreeItemModel>;
+  hoveredColumn: EditorColumnComponent;
   initRootRow(row: EditorRowComponent): void;
   addRow(column: EditorColumnComponent): void;
   addColumn(column: EditorColumnComponent): void;
@@ -13,7 +14,7 @@ export interface EditorServiceModel {
 
 export interface TreeItemModel {
   id: string;
-  items: TreeItemModel[];
+  children: TreeItemModel[];
   component: EditorComponentModel;
   componentRef: ComponentRef<EditorComponentModel>;
   type: EditorComponentType;

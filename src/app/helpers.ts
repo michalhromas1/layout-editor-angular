@@ -5,7 +5,7 @@ export function makeImmutable<T>(what: T): Readonly<T> {
 export function getNestedProperties<T>(
   of: T,
   childrenKey: string,
-  propertiesToGet: string[] = []
+  propertiesToGet: { key: string; fn?: (child: Partial<T>) => any }[] = []
 ): Partial<T> {
   return traverse<T>(of);
 
@@ -14,11 +14,11 @@ export function getNestedProperties<T>(
     result[childrenKey] = [];
 
     for (const prop of propertiesToGet) {
-      result[prop] = current[prop];
+      result[prop.key] = prop.fn ? prop.fn(current as any) : current[prop.key];
     }
 
     if (current[childrenKey]?.length) {
-      result[childrenKey] = current[childrenKey].map((child) =>
+      result[childrenKey] = current[childrenKey].map((child: T) =>
         traverse(child)
       );
     }
