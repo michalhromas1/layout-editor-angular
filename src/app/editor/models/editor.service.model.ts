@@ -1,15 +1,22 @@
 import { ComponentRef } from '@angular/core';
+import { Observable } from 'rxjs';
 import { EditorColumnComponent } from '../editor-column/editor-column.component';
 import { EditorRowComponent } from '../editor-row/editor-row.component';
+import { ContentPickerItemModel } from './editor-content-picker.model';
 import { EditorComponentModel } from './editor.component.model';
 
 export interface EditorServiceModel {
   editorTree: Readonly<TreeItemModel>;
+  isPreviewMode$: Observable<boolean>;
   hoveredColumn: EditorColumnComponent;
-  initRootRow(row: EditorRowComponent): void;
+  createTree(
+    rootRow: EditorRowComponent,
+    treeCreator?: TreeCreatorItemModel
+  ): void;
   addRow(column: EditorColumnComponent): void;
   addColumn(column: EditorColumnComponent): void;
   removeColumn(column: EditorColumnComponent): void;
+  togglePreviewMode(): void;
 }
 
 export interface TreeItemModel {
@@ -17,6 +24,12 @@ export interface TreeItemModel {
   children: TreeItemModel[];
   component: EditorComponentModel;
   componentRef: ComponentRef<EditorComponentModel>;
+  type: EditorComponentType;
+}
+
+export interface TreeCreatorItemModel {
+  children: TreeCreatorItemModel[];
+  items: ContentPickerItemModel[];
   type: EditorComponentType;
 }
 

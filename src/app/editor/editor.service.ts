@@ -6,6 +6,7 @@ import {
   ViewContainerRef,
   ViewRef,
 } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import { makeImmutable } from '../helpers';
 import { EditorColumnComponent } from './editor-column/editor-column.component';
@@ -13,6 +14,7 @@ import { EditorRowComponent } from './editor-row/editor-row.component';
 import { EditorComponentModel } from './models/editor.component.model';
 import {
   EditorServiceModel,
+  TreeCreatorItemModel,
   TreeItemModel,
 } from './models/editor.service.model';
 
@@ -26,12 +28,55 @@ export class EditorService implements EditorServiceModel {
 
   private _editorTree: TreeItemModel = {} as TreeItemModel;
 
+  private _isPreviewMode$ = new BehaviorSubject<boolean>(false);
+  isPreviewMode$ = this._isPreviewMode$.asObservable();
+
   constructor(private componentFactoryResolver: ComponentFactoryResolver) {}
 
-  initRootRow(row: EditorRowComponent): void {
+  createTree(
+    rootRow: EditorRowComponent,
+    treeCreator?: TreeCreatorItemModel
+  ): void {
+    this.initRootRow(rootRow);
+    const rootColumn = this.createColumn(
+      rootRow,
+      true,
+      !treeCreator?.children?.length
+    );
+
+    if (!treeCreator) {
+      return;
+    }
+
+    this.createNestedTreeItem(rootColumn.instance, treeCreator);
+  }
+
+  private initRootRow(row: EditorRowComponent): void {
     row.id = this.generateId();
     this.addToTree(row);
-    this.createColumn(row, true);
+  }
+
+  private createNestedTreeItem(
+    parent: EditorComponentModel,
+    parentTreeCreatorItem: TreeCreatorItemModel
+  ): void {
+    if (parentTreeCreatorItem.type === 'column') {
+      (parent as EditorColumnComponent).droppedItems =
+        parentTreeCreatorItem.items || [];
+    }
+
+    for (const child of parentTreeCreatorItem.children) {
+      const created =
+        child.type === 'row'
+          ? this.createRow(parent as EditorColumnComponent)
+          : this.createColumn(
+              parent as EditorRowComponent,
+              false,
+              !child.children?.length
+            );
+
+      this.createNestedTreeItem(created.instance, child);
+    }
   }
 
   addRow(column: EditorColumnComponent): void {
@@ -114,6 +159,10 @@ export class EditorService implements EditorServiceModel {
 
     (parentColumn.componentRef.instance as EditorColumnComponent).isInnermost =
       true;
+  }
+
+  togglePreviewMode(): void {
+    this._isPreviewMode$.next(!this._isPreviewMode$.getValue());
   }
 
   private createColumn(

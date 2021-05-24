@@ -1,14 +1,21 @@
-<button type="button" (click)="logTree()" style="margin-bottom: 1rem">
-  Log Tree
-</button>
+<div class="buttons">
+  <button type="button" (click)="editorService.togglePreviewMode()">
+    Toggle Preview Mode
+  </button>
+  <button type="button" (click)="logTree()">Log Tree</button>
+</div>
 
-<div class="grid" cdkDropListGroup>
+<div [class.grid]="!(editorService.isPreviewMode$ | async)" cdkDropListGroup>
   <app-editor-content-picker
+    *ngIf="!(editorService.isPreviewMode$ | async)"
     cdkDropList
     [items]="contentPickerItems"
     [cdkDropListData]="contentPickerItems"
     (cdkDropListDropped)="onDropInContentPicker($event)"
   ></app-editor-content-picker>
 
-  <app-editor-row [isRootComponent]="true"></app-editor-row>
+  <app-editor-row
+    [isRootComponent]="true"
+    [treeCreator]="treeCreator"
+  ></app-editor-row>
 </div>

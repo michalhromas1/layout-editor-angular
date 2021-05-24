@@ -18,9 +18,12 @@
   max-width: 20rem;
 }
 
-button {
-  margin-left: auto;
-  display: block;
+.buttons {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  column-gap: 1rem;
 }
 
 .grid {
@@ -28,4 +31,23 @@ button {
   grid-template-columns: 1fr 5fr;
   column-gap: 2rem;
   align-items: flex-start;
+}
+
+.preview-mode {
+  .col {
+    display: grid;
+    flex: 1;
+    min-height: 10rem;
+    row-gap: 1rem;
+    padding: 1rem;
+    align-content: flex-start;
+    border: 1px solid blue;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: var(--editor-column-spacing);
+    column-gap: var(--editor-column-spacing);
+  }
 }

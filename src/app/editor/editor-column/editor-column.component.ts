@@ -41,7 +41,7 @@ export class EditorColumnComponent implements EditorComponentModel {
   }
 
   constructor(
-    @Inject(EDITOR_SERVICE) private editorService: EditorServiceModel
+    @Inject(EDITOR_SERVICE) public editorService: EditorServiceModel
   ) {}
 
   private toggleIsHovered(is: boolean): void {
