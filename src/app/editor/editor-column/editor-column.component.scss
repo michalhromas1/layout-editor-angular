@@ -1,19 +1,51 @@
 :host {
-  position: relative;
-  background: lightgray;
-  border: 3px solid darkblue;
-  padding: var(--editor-column-spacing);
   display: grid;
   flex: 1;
-  row-gap: var(--editor-column-spacing);
-  column-gap: var(--editor-column-spacing);
+  min-height: 10rem;
+}
+
+.column {
+  position: relative;
+  background: #f5f5f5;
+  border: 3px solid darkblue;
 
   &.hovered {
     border-color: darkorange;
+
+    & > button {
+      display: block;
+    }
   }
 
-  &.hovered > button {
-    display: block;
+  &.innermost {
+    background: red;
+  }
+
+  .dropzone,
+  .fake-dropzone {
+    display: grid;
+    row-gap: 1rem;
+    padding: 1rem;
+    align-content: flex-start;
+  }
+
+  .dropzone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+}
+
+.slot-wrapper {
+  display: grid;
+  row-gap: var(--editor-column-spacing);
+  column-gap: var(--editor-column-spacing);
+
+  &:not(.has-dropped-items) {
+    padding: var(--editor-column-spacing);
+    height: 100%;
   }
 }
 
@@ -40,5 +72,11 @@ button {
     bottom: 0;
     left: 50%;
     transform: translate(-50%, +50%);
+  }
+
+  &.remove-column {
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
   }
 }
