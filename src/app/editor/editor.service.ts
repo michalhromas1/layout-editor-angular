@@ -18,38 +18,44 @@ import {
 
 @Injectable()
 export class EditorService implements EditorServiceModel {
-  private _editorTree: TreeItemModel = {} as TreeItemModel;
+  hoveredColumn: EditorColumnComponent;
 
-  public get editorTree(): Readonly<TreeItemModel> {
+  get editorTree(): Readonly<TreeItemModel> {
     return makeImmutable(this._editorTree);
   }
 
+  private _editorTree: TreeItemModel = {} as TreeItemModel;
+
   constructor(private componentFactoryResolver: ComponentFactoryResolver) {}
 
-  public initRootRow(row: EditorRowComponent): void {
+  initRootRow(row: EditorRowComponent): void {
     row.id = this.generateId();
     this.addToTree(row);
     this.createColumn(row, true);
   }
 
-  public addRow(column: EditorColumnComponent): void {
-    const hasRows = !!this.findInTree(column.id).items.length;
+  addRow(column: EditorColumnComponent): void {
+    const hasRows = !!this.findInTree(column.id).children.length;
 
     if (!hasRows) {
       const row = this.createRow(column);
-      this.createColumn(row.instance);
+      const newColumn = this.createColumn(row.instance);
+      newColumn.instance.droppedItems = column.droppedItems;
     }
 
     const row = this.createRow(column);
     this.createColumn(row.instance);
   }
 
-  public addColumn(column: EditorColumnComponent): void {
-    const rows = this.findInTree(column.id).items;
+  addColumn(column: EditorColumnComponent): void {
+    const rows = this.findInTree(column.id).children;
 
     if (!rows.length) {
       const row = this.createRow(column);
-      this.createColumn(row.instance);
+
+      const firstColumn = this.createColumn(row.instance);
+      firstColumn.instance.droppedItems = column.droppedItems;
+
       this.createColumn(row.instance);
       return;
     }
@@ -64,11 +70,12 @@ export class EditorService implements EditorServiceModel {
 
   private splitColumnWithRows(column: EditorColumnComponent): void {
     const columnTreeItem = this.findInTree(column.id);
-    const rows = [...columnTreeItem.items];
-    columnTreeItem.items = [];
+    const rows = [...columnTreeItem.children];
+    columnTreeItem.children = [];
 
     const wrapperRow = this.createRow(column);
     const firstColumn = this.createColumn(wrapperRow.instance);
+    firstColumn.instance.isInnermost = false;
     this.createColumn(wrapperRow.instance);
 
     for (const row of rows) {
@@ -81,34 +88,46 @@ export class EditorService implements EditorServiceModel {
       row.componentRef.instance.parentId = firstColumn.instance.id;
     }
 
-    this.findInTree(firstColumn.instance.id).items = [...rows];
+    this.findInTree(firstColumn.instance.id).children = [...rows];
   }
 
-  public removeColumn(column: EditorColumnComponent): void {
+  removeColumn(column: EditorColumnComponent): void {
     const row = this.findInTree(column.parentId);
-    const columnRef = row.items.find((i) => i.id === column.id).componentRef;
+    const columnRef = row.children.find((i) => i.id === column.id).componentRef;
 
-    row.items = row.items.filter((i) => i.id !== column.id);
+    row.children = row.children.filter((i) => i.id !== column.id);
     this.destroy(columnRef);
 
-    if (row.items.length) {
+    if (row.children.length) {
       return;
     }
 
     this.destroy(row.componentRef);
     const parentColumn = this.findInTree(row.component.parentId);
-    parentColumn.items = parentColumn.items.filter((i) => i.id !== row.id);
+    parentColumn.children = parentColumn.children.filter(
+      (i) => i.id !== row.id
+    );
+
+    if (parentColumn.children.length) {
+      return;
+    }
+
+    (parentColumn.componentRef.instance as EditorColumnComponent).isInnermost =
+      true;
   }
 
   private createColumn(
     parent: EditorRowComponent,
-    isRootComponent: boolean = false
+    isRootComponent: boolean = false,
+    isInnermost: boolean = true
   ): ComponentRef<EditorColumnComponent> {
-    return this.create<EditorColumnComponent>(
+    const column = this.create<EditorColumnComponent>(
       EditorColumnComponent,
       parent,
       isRootComponent
     );
+    column.instance.isInnermost = isInnermost;
+    return column;
   }
 
   private createRow(
@@ -154,7 +173,7 @@ export class EditorService implements EditorServiceModel {
   ): void {
     const item: TreeItemModel = {
       id: component.id,
-      items: [],
+      children: [],
       component,
       componentRef: componentRef || null,
       type: component instanceof EditorRowComponent ? 'row' : 'column',
@@ -165,7 +184,7 @@ export class EditorService implements EditorServiceModel {
       return;
     }
 
-    this.findInTree(component.parentId).items.push(item);
+    this.findInTree(component.parentId).children.push(item);
   }
 
   private findInTree(id: string): TreeItemModel {
@@ -178,7 +197,7 @@ export class EditorService implements EditorServiceModel {
 
       let found;
 
-      for (const item of current.items) {
+      for (const item of current.children) {
         if ((found = traverse(item))) {
           return found;
         }

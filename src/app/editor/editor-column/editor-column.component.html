@@ -1,11 +1,42 @@
-<ng-container #slot></ng-container>
-<button (click)="addColumn()" class="add-column" type="button">C+</button>
-<button
-  *ngIf="!isRootComponent"
-  (click)="deleteColumn()"
-  class="delete-column"
-  type="button"
->
-  C-
-</button>
-<button (click)="addRow()" class="add-row" type="button">R+</button>
+<div class="column" [class.innermost]="isInnermost" [class.hovered]="isHovered">
+  <div
+    class="slot-wrapper"
+    [class.has-dropped-items]="this.droppedItems.length"
+  >
+    <ng-container #slot></ng-container>
+  </div>
+
+  <ng-container *ngIf="isInnermost">
+    <div
+      class="dropzone"
+      cdkDropList
+      [cdkDropListData]="droppedItems"
+      (cdkDropListDropped)="onItemDrop($event)"
+    >
+      <div
+        *ngFor="let item of droppedItems"
+        cdkDrag
+        class="content-item dropped-item"
+      >
+        {{ item.value }}
+      </div>
+    </div>
+
+    <div class="fake-dropzone" *ngIf="this.droppedItems.length">
+      <div *ngFor="let item of droppedItems" class="content-item">
+        {{ item.value }}
+      </div>
+    </div>
+  </ng-container>
+
+  <button (click)="addColumn()" class="add-column" type="button">C+</button>
+  <button
+    *ngIf="!isRootComponent"
+    (click)="removeColumn()"
+    class="remove-column"
+    type="button"
+  >
+    C-
+  </button>
+  <button (click)="addRow()" class="add-row" type="button">R+</button>
+</div>

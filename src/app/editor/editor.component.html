@@ -1,4 +1,14 @@
 <button type="button" (click)="logTree()" style="margin-bottom: 1rem">
   Log Tree
 </button>
-<app-editor-row [isRootComponent]="true"></app-editor-row>
+
+<div class="grid" cdkDropListGroup>
+  <app-editor-content-picker
+    cdkDropList
+    [items]="contentPickerItems"
+    [cdkDropListData]="contentPickerItems"
+    (cdkDropListDropped)="onDropInContentPicker($event)"
+  ></app-editor-content-picker>
+
+  <app-editor-row [isRootComponent]="true"></app-editor-row>
+</div>
