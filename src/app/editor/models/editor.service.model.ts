@@ -18,6 +18,7 @@ export interface EditorServiceModel {
   addColumn(column: EditorColumnComponent): void;
   removeColumn(column: EditorColumnComponent): void;
   togglePreviewMode(): void;
+  findInTree(id: string): TreeItemModel;
   generateId(): string;
 }
 
@@ -33,6 +34,7 @@ export interface TreeCreatorItemModel {
   children: TreeCreatorItemModel[];
   items: ContentPickerItemModel[];
   type: EditorComponentType;
+  flexGrow?: number;
 }
 
 export type EditorComponentType = 'row' | 'column';

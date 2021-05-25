@@ -3,11 +3,9 @@
   [class.innermost]="isInnermost"
   [class.hovered]="isHovered"
   [class.preview]="editorService.isPreviewMode$ | async"
+  [class.has-dropped-items]="this.droppedItems.length"
 >
-  <div
-    class="slot-wrapper"
-    [class.has-dropped-items]="this.droppedItems.length"
-  >
+  <div class="slot-wrapper">
     <ng-container #slot></ng-container>
   </div>
 
@@ -30,7 +28,11 @@
       </div>
     </div>
 
-    <div class="fake-dropzone" *ngIf="this.droppedItems.length">
+    <div class="fake-dropzone">
+      <div
+        *ngIf="!droppedItems.length"
+        class="content-item fake-content-item"
+      ></div>
       <div *ngFor="let item of droppedItems" class="content-item">
         {{ item.value }}
       </div>
@@ -38,6 +40,17 @@
   </ng-container>
 
   <ng-container *ngIf="!(editorService.isPreviewMode$ | async)">
+    <div
+      *ngIf="shouldDisplayLeftResizer"
+      class="resizer resizer-left"
+      (mousedown)="startResizingColumn($event, 'left')"
+    ></div>
+    <div
+      *ngIf="shouldDisplayRightResizer"
+      class="resizer resizer-right"
+      (mousedown)="startResizingColumn($event, 'right')"
+    ></div>
+
     <button (click)="addColumn()" class="add-column" type="button">C+</button>
     <button
       *ngIf="!isRootComponent"
