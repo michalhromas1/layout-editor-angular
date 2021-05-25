@@ -1,10 +1,13 @@
-import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Component, Inject } from '@angular/core';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { Component, Inject, Input } from '@angular/core';
 import { getNestedProperties } from '../helpers';
 import { EditorColumnComponent } from './editor-column/editor-column.component';
 import { EDITOR_SERVICE } from './editor.service.token';
 import { ContentPickerItemModel } from './models/editor-content-picker.model';
-import { EditorServiceModel } from './models/editor.service.model';
+import {
+  EditorServiceModel,
+  TreeCreatorItemModel,
+} from './models/editor.service.model';
 
 @Component({
   selector: 'app-editor',
@@ -12,20 +15,11 @@ import { EditorServiceModel } from './models/editor.service.model';
   styleUrls: ['./editor.component.scss'],
 })
 export class EditorComponent {
-  contentPickerItems: ContentPickerItemModel[] = [
-    {
-      value: '1',
-    },
-    {
-      value: '2',
-    },
-    {
-      value: '3',
-    },
-  ];
+  @Input() treeCreator: TreeCreatorItemModel;
+  @Input() contentPickerItems: ContentPickerItemModel[] = [];
 
   constructor(
-    @Inject(EDITOR_SERVICE) private editorService: EditorServiceModel
+    @Inject(EDITOR_SERVICE) public editorService: EditorServiceModel
   ) {}
 
   logTree(): void {
@@ -43,12 +37,6 @@ export class EditorComponent {
     );
   }
 
-  isFromPickerItself(item: CdkDrag<ContentPickerItemModel>): boolean {
-    const isFromLayout =
-      item.element.nativeElement.classList.contains('dropped-item');
-    return !isFromLayout;
-  }
-
   onDropInContentPicker(event: CdkDragDrop<ContentPickerItemModel[]>): void {
     const { container, previousContainer, previousIndex } = event;
 
@@ -56,6 +44,16 @@ export class EditorComponent {
       return;
     }
 
-    previousContainer.data.splice(previousIndex, 1);
+    if (!this.editorService.selectedItems.length) {
+      previousContainer.data.splice(previousIndex, 1);
+      return;
+    }
+
+    for (const item of this.editorService.selectedItems) {
+      const idx = previousContainer.data.findIndex((i) => i.id === item.id);
+      previousContainer.data.splice(idx, 1);
+    }
+
+    this.editorService.selectedItems = [];
   }
 }

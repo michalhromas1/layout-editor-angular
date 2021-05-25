@@ -8,7 +8,10 @@ import {
 } from '@angular/core';
 import { EDITOR_SERVICE } from '../editor.service.token';
 import { EditorComponentModel } from '../models/editor.component.model';
-import { EditorServiceModel } from '../models/editor.service.model';
+import {
+  EditorServiceModel,
+  TreeCreatorItemModel,
+} from '../models/editor.service.model';
 
 @Component({
   selector: 'app-editor-row',
@@ -19,6 +22,7 @@ export class EditorRowComponent implements EditorComponentModel, OnInit {
   @Input() id: string;
   @Input() parentId: string;
   @Input() isRootComponent: boolean = false;
+  @Input() treeCreator: TreeCreatorItemModel;
 
   @ViewChild('slot', { read: ViewContainerRef, static: true })
   slot: ViewContainerRef;
@@ -29,7 +33,7 @@ export class EditorRowComponent implements EditorComponentModel, OnInit {
 
   ngOnInit(): void {
     if (this.isRootComponent) {
-      this.editorService.initRootRow(this);
+      this.editorService.createTree(this, this.treeCreator);
     }
   }
 }

@@ -1,4 +1,9 @@
-<div class="column" [class.innermost]="isInnermost" [class.hovered]="isHovered">
+<div
+  class="column"
+  [class.innermost]="isInnermost"
+  [class.hovered]="isHovered"
+  [class.preview]="editorService.isPreviewMode$ | async"
+>
   <div
     class="slot-wrapper"
     [class.has-dropped-items]="this.droppedItems.length"
@@ -8,6 +13,7 @@
 
   <ng-container *ngIf="isInnermost">
     <div
+      *ngIf="!(editorService.isPreviewMode$ | async)"
       class="dropzone"
       cdkDropList
       [cdkDropListData]="droppedItems"
@@ -17,6 +23,8 @@
         *ngFor="let item of droppedItems"
         cdkDrag
         class="content-item dropped-item"
+        [class.selected]="item.selected"
+        (click)="onClickDroppedItem($event, item)"
       >
         {{ item.value }}
       </div>
@@ -29,14 +37,16 @@
     </div>
   </ng-container>
 
-  <button (click)="addColumn()" class="add-column" type="button">C+</button>
-  <button
-    *ngIf="!isRootComponent"
-    (click)="removeColumn()"
-    class="remove-column"
-    type="button"
-  >
-    C-
-  </button>
-  <button (click)="addRow()" class="add-row" type="button">R+</button>
+  <ng-container *ngIf="!(editorService.isPreviewMode$ | async)">
+    <button (click)="addColumn()" class="add-column" type="button">C+</button>
+    <button
+      *ngIf="!isRootComponent"
+      (click)="removeColumn()"
+      class="remove-column"
+      type="button"
+    >
+      C-
+    </button>
+    <button (click)="addRow()" class="add-row" type="button">R+</button>
+  </ng-container>
 </div>

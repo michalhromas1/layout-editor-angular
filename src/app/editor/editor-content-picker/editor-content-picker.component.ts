@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ContentPickerItemModel } from '../models/editor-content-picker.model';
 
 @Component({
@@ -6,10 +6,6 @@ import { ContentPickerItemModel } from '../models/editor-content-picker.model';
   templateUrl: './editor-content-picker.component.html',
   styleUrls: ['./editor-content-picker.component.scss'],
 })
-export class EditorContentPickerComponent implements OnInit {
+export class EditorContentPickerComponent {
   @Input() items: ContentPickerItemModel[] = [];
-
-  constructor() {}
-
-  ngOnInit(): void {}
 }
