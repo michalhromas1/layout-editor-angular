@@ -6,19 +6,32 @@
 
 .column {
   position: relative;
-  background: #f5f5f5;
   border: 3px solid darkblue;
 
-  &.hovered {
-    border-color: darkorange;
+  &:not(.preview) {
+    background: #f5f5f5;
 
-    & > button {
-      display: block;
+    &.hovered {
+      border-color: darkorange;
+
+      & > button {
+        display: block;
+      }
+    }
+
+    &.innermost {
+      background: red;
     }
   }
 
-  &.innermost {
-    background: red;
+  &.preview {
+    &:not(.innermost) {
+      border: none;
+    }
+
+    .slot-wrapper {
+      padding: 0;
+    }
   }
 
   .dropzone,
@@ -79,4 +92,8 @@ button {
     left: 0;
     transform: translate(-50%, -50%);
   }
+}
+
+.dropped-item.selected {
+  background: lightblue;
 }
