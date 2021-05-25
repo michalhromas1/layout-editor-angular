@@ -1,4 +1,8 @@
-import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  CdkDropList,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 import {
   Component,
   HostListener,
@@ -31,13 +35,27 @@ export class EditorColumnComponent implements EditorComponentModel {
   @ViewChild('slot', { read: ViewContainerRef, static: true })
   slot: ViewContainerRef;
 
-  @HostListener('mouseover', ['$event']) onMouseEnter(e: MouseEvent) {
+  @HostListener('mouseover', ['$event']) onMouseEnter(e: MouseEvent): void {
     e.stopPropagation();
     this.toggleIsHovered(true);
   }
 
-  @HostListener('mouseleave') onMouseLeave() {
+  @HostListener('mouseleave') onMouseLeave(): void {
     this.toggleIsHovered(false);
+  }
+
+  @HostListener('document:mousedown', ['$event']) onDocumentClick(
+    e: MouseEvent
+  ): void {
+    const didClickOnDroppedItem = (e.target as HTMLElement).classList.contains(
+      'dropped-item'
+    );
+
+    if (didClickOnDroppedItem) {
+      return;
+    }
+
+    this.resetSelectedItems();
   }
 
   constructor(
@@ -86,7 +104,11 @@ export class EditorColumnComponent implements EditorComponentModel {
       sourceElement.tagName.toLowerCase() === this.CONTENT_PICKER_TAG_NAME;
 
     if (isFromContentPicker) {
-      const item = source.data[sourceIndex];
+      const item = {
+        ...source.data[sourceIndex],
+        id: this.editorService.generateId(),
+        selected: false,
+      };
 
       this.droppedItems = [
         ...this.droppedItems.slice(0, targetIndex),
@@ -97,6 +119,54 @@ export class EditorColumnComponent implements EditorComponentModel {
       return;
     }
 
-    transferArrayItem(source.data, this.droppedItems, sourceIndex, targetIndex);
+    const selectedItems = source.data.filter((item) => item.selected);
+
+    if (!selectedItems.length) {
+      this.moveItem(source, sourceIndex, targetIndex);
+      return;
+    }
+
+    selectedItems.forEach((item, idx) => {
+      this.moveItem(
+        source,
+        source.data.findIndex((i) => i.id === item.id),
+        targetIndex + idx
+      );
+      this.resetSelectedItems();
+    });
+  }
+
+  private moveItem(
+    from: CdkDropList<ContentPickerItemModel[]>,
+    fromIndex: number,
+    toIndex: number
+  ): void {
+    transferArrayItem(from.data, this.droppedItems, fromIndex, toIndex);
+  }
+
+  onClickDroppedItem(e: MouseEvent, item: ContentPickerItemModel): void {
+    const isModifierKeyPressed = e.metaKey || e.ctrlKey;
+
+    if (
+      !this.droppedItems.some((item) => item.selected) ||
+      !isModifierKeyPressed
+    ) {
+      this.resetSelectedItems();
+    }
+
+    if (!isModifierKeyPressed) {
+      return;
+    }
+
+    item.selected = !item.selected;
+    this.editorService.selectedItems.push(item);
+  }
+
+  private resetSelectedItems(): void {
+    for (const item of this.editorService.selectedItems) {
+      item.selected = false;
+    }
+
+    this.editorService.selectedItems = [];
   }
 }

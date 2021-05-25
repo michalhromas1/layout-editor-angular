@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { makeImmutable } from '../helpers';
 import { EditorColumnComponent } from './editor-column/editor-column.component';
 import { EditorRowComponent } from './editor-row/editor-row.component';
+import { ContentPickerItemModel } from './models/editor-content-picker.model';
 import { EditorComponentModel } from './models/editor.component.model';
 import {
   EditorServiceModel,
@@ -21,9 +22,10 @@ import {
 @Injectable()
 export class EditorService implements EditorServiceModel {
   hoveredColumn: EditorColumnComponent;
+  selectedItems: ContentPickerItemModel[] = [];
 
   get editorTree(): Readonly<TreeItemModel> {
-    return makeImmutable(this._editorTree);
+    return makeImmutable(this._editorTree.children[0]);
   }
 
   private _editorTree: TreeItemModel = {} as TreeItemModel;
@@ -62,7 +64,11 @@ export class EditorService implements EditorServiceModel {
   ): void {
     if (parentTreeCreatorItem.type === 'column') {
       (parent as EditorColumnComponent).droppedItems =
-        parentTreeCreatorItem.items || [];
+        parentTreeCreatorItem.items.map((i) => ({
+          ...i,
+          id: this.generateId(),
+          selected: false,
+        })) || [];
     }
 
     for (const child of parentTreeCreatorItem.children) {
@@ -256,7 +262,7 @@ export class EditorService implements EditorServiceModel {
     }
   }
 
-  private generateId(): string {
+  public generateId(): string {
     return uuidv4();
   }
 }

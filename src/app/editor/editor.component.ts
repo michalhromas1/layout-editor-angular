@@ -44,6 +44,16 @@ export class EditorComponent {
       return;
     }
 
-    previousContainer.data.splice(previousIndex, 1);
+    if (!this.editorService.selectedItems.length) {
+      previousContainer.data.splice(previousIndex, 1);
+      return;
+    }
+
+    for (const item of this.editorService.selectedItems) {
+      const idx = previousContainer.data.findIndex((i) => i.id === item.id);
+      previousContainer.data.splice(idx, 1);
+    }
+
+    this.editorService.selectedItems = [];
   }
 }

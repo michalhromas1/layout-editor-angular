@@ -93,3 +93,7 @@ button {
     transform: translate(-50%, -50%);
   }
 }
+
+.dropped-item.selected {
+  background: lightblue;
+}

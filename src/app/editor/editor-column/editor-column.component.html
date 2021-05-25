@@ -23,6 +23,8 @@
         *ngFor="let item of droppedItems"
         cdkDrag
         class="content-item dropped-item"
+        [class.selected]="item.selected"
+        (click)="onClickDroppedItem($event, item)"
       >
         {{ item.value }}
       </div>

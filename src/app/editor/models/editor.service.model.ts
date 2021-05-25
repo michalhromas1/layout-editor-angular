@@ -9,6 +9,7 @@ export interface EditorServiceModel {
   editorTree: Readonly<TreeItemModel>;
   isPreviewMode$: Observable<boolean>;
   hoveredColumn: EditorColumnComponent;
+  selectedItems: ContentPickerItemModel[];
   createTree(
     rootRow: EditorRowComponent,
     treeCreator?: TreeCreatorItemModel
@@ -17,6 +18,7 @@ export interface EditorServiceModel {
   addColumn(column: EditorColumnComponent): void;
   removeColumn(column: EditorColumnComponent): void;
   togglePreviewMode(): void;
+  generateId(): string;
 }
 
 export interface TreeItemModel {
