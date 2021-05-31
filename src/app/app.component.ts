@@ -4,7 +4,7 @@ import { TreeCreatorItemModel } from './editor/models/editor.service.model';
 
 @Component({
   selector: 'app-root',
-  template: `<app-editor
+  template: ` <app-editor
     [treeCreator]="treeCreator"
     [contentPickerItems]="contentPickerItems"
   ></app-editor>`,
@@ -22,26 +22,30 @@ export class AppComponent {
     },
   ];
 
-  treeCreator: TreeCreatorItemModel = {
-    type: 'column',
-    items: [],
-    children: [
-      {
-        type: 'row',
-        items: [],
-        children: [
-          {
-            type: 'column',
-            items: [{ value: '2' }],
-            children: [],
-          },
-          {
-            type: 'column',
-            items: [{ value: '1' }],
-            children: [],
-          },
-        ],
-      },
-    ],
-  };
+  treeCreator: TreeCreatorItemModel;
+
+  //   treeCreator: TreeCreatorItemModel = {
+  //     type: 'column',
+  //     items: [],
+  //     children: [
+  //       {
+  //         type: 'row',
+  //         items: [],
+  //         children: [
+  //           {
+  //             type: 'column',
+  //             items: [{ value: '2' }],
+  //             children: [],
+  //             flexGrow: 30,
+  //           },
+  //           {
+  //             type: 'column',
+  //             items: [{ value: '1' }],
+  //             children: [],
+  //             flexGrow: 70,
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //   };
 }

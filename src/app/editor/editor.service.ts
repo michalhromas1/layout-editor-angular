@@ -12,7 +12,10 @@ import { makeImmutable } from '../helpers';
 import { EditorColumnComponent } from './editor-column/editor-column.component';
 import { EditorRowComponent } from './editor-row/editor-row.component';
 import { ContentPickerItemModel } from './models/editor-content-picker.model';
-import { EditorComponentModel } from './models/editor.component.model';
+import {
+  ColumnComponentModel,
+  EditorComponentModel,
+} from './models/editor.component.model';
 import {
   EditorServiceModel,
   TreeCreatorItemModel,
@@ -33,6 +36,8 @@ export class EditorService implements EditorServiceModel {
   private _isPreviewMode$ = new BehaviorSubject<boolean>(false);
   isPreviewMode$ = this._isPreviewMode$.asObservable();
 
+  private readonly GRID_SIZE: number = 100;
+
   constructor(private componentFactoryResolver: ComponentFactoryResolver) {}
 
   createTree(
@@ -40,11 +45,12 @@ export class EditorService implements EditorServiceModel {
     treeCreator?: TreeCreatorItemModel
   ): void {
     this.initRootRow(rootRow);
-    const rootColumn = this.createColumn(
-      rootRow,
-      true,
-      !treeCreator?.children?.length
-    );
+    const rootColumn = this.createColumn(rootRow, true, {
+      flexGrow: this.GRID_SIZE,
+      isInnermost: !treeCreator?.children?.length,
+      shouldDisplayLeftResizer: false,
+      shouldDisplayRightResizer: false,
+    });
 
     if (!treeCreator) {
       return;
@@ -71,18 +77,22 @@ export class EditorService implements EditorServiceModel {
         })) || [];
     }
 
-    for (const child of parentTreeCreatorItem.children) {
+    parentTreeCreatorItem.children.forEach((child, idx) => {
       const created =
         child.type === 'row'
           ? this.createRow(parent as EditorColumnComponent)
-          : this.createColumn(
-              parent as EditorRowComponent,
-              false,
-              !child.children?.length
-            );
+          : this.createColumn(parent as EditorRowComponent, false, {
+              flexGrow:
+                child.flexGrow ||
+                this.GRID_SIZE / parentTreeCreatorItem.children.length,
+              isInnermost: !child.children?.length,
+              shouldDisplayLeftResizer: idx !== 0,
+              shouldDisplayRightResizer:
+                idx !== parentTreeCreatorItem.children.length - 1,
+            });
 
       this.createNestedTreeItem(created.instance, child);
-    }
+    });
   }
 
   addRow(column: EditorColumnComponent): void {
@@ -90,12 +100,22 @@ export class EditorService implements EditorServiceModel {
 
     if (!hasRows) {
       const row = this.createRow(column);
-      const newColumn = this.createColumn(row.instance);
+      const newColumn = this.createColumn(row.instance, false, {
+        flexGrow: this.GRID_SIZE,
+        isInnermost: true,
+        shouldDisplayLeftResizer: false,
+        shouldDisplayRightResizer: false,
+      });
       newColumn.instance.droppedItems = column.droppedItems;
     }
 
     const row = this.createRow(column);
-    this.createColumn(row.instance);
+    this.createColumn(row.instance, false, {
+      flexGrow: this.GRID_SIZE,
+      isInnermost: true,
+      shouldDisplayLeftResizer: false,
+      shouldDisplayRightResizer: false,
+    });
   }
 
   addColumn(column: EditorColumnComponent): void {
@@ -104,15 +124,48 @@ export class EditorService implements EditorServiceModel {
     if (!rows.length) {
       const row = this.createRow(column);
 
-      const firstColumn = this.createColumn(row.instance);
+      const firstColumn = this.createColumn(row.instance, false, {
+        flexGrow: this.GRID_SIZE / 2,
+        isInnermost: true,
+        shouldDisplayLeftResizer: false,
+        shouldDisplayRightResizer: true,
+      });
       firstColumn.instance.droppedItems = column.droppedItems;
 
-      this.createColumn(row.instance);
+      this.createColumn(row.instance, false, {
+        flexGrow: this.GRID_SIZE / 2,
+        isInnermost: true,
+        shouldDisplayLeftResizer: true,
+        shouldDisplayRightResizer: false,
+      });
       return;
     }
 
     if (rows.length === 1) {
-      this.createColumn(rows[0].component as EditorRowComponent);
+      const firstRow = rows[0];
+
+      const targetChildrenCount = firstRow.children.length + 1;
+      const targetFlexGrow = this.GRID_SIZE / targetChildrenCount;
+
+      for (const child of firstRow.children) {
+        const childComponent = child.component as EditorColumnComponent;
+
+        childComponent.flexGrow =
+          ((this.GRID_SIZE - targetFlexGrow) / 100) * childComponent.flexGrow;
+      }
+
+      (
+        firstRow.children[firstRow.children.length - 1]
+          .component as EditorColumnComponent
+      ).shouldDisplayRightResizer = true;
+
+      this.createColumn(firstRow.component as EditorRowComponent, false, {
+        flexGrow: targetFlexGrow,
+        isInnermost: true,
+        shouldDisplayLeftResizer: true,
+        shouldDisplayRightResizer: false,
+      });
+
       return;
     }
 
@@ -125,9 +178,19 @@ export class EditorService implements EditorServiceModel {
     columnTreeItem.children = [];
 
     const wrapperRow = this.createRow(column);
-    const firstColumn = this.createColumn(wrapperRow.instance);
+    const firstColumn = this.createColumn(wrapperRow.instance, false, {
+      flexGrow: this.GRID_SIZE / 2,
+      isInnermost: true,
+      shouldDisplayLeftResizer: false,
+      shouldDisplayRightResizer: true,
+    });
     firstColumn.instance.isInnermost = false;
-    this.createColumn(wrapperRow.instance);
+    this.createColumn(wrapperRow.instance, false, {
+      flexGrow: this.GRID_SIZE / 2,
+      isInnermost: true,
+      shouldDisplayLeftResizer: true,
+      shouldDisplayRightResizer: false,
+    });
 
     for (const row of rows) {
       this.move(
@@ -147,9 +210,25 @@ export class EditorService implements EditorServiceModel {
     const columnRef = row.children.find((i) => i.id === column.id).componentRef;
 
     row.children = row.children.filter((i) => i.id !== column.id);
+
+    const destroyedFlexGrow = (columnRef.instance as EditorColumnComponent)
+      .flexGrow;
+
     this.destroy(columnRef);
 
     if (row.children.length) {
+      row.children.forEach((child, idx) => {
+        const childComponent = child.component as EditorColumnComponent;
+
+        childComponent.shouldDisplayLeftResizer = idx !== 0;
+        childComponent.shouldDisplayRightResizer =
+          idx !== row.children.length - 1;
+
+        childComponent.flexGrow = Math.round(
+          childComponent.flexGrow + destroyedFlexGrow / row.children.length
+        );
+      });
+
       return;
     }
 
@@ -173,15 +252,22 @@ export class EditorService implements EditorServiceModel {
 
   private createColumn(
     parent: EditorRowComponent,
-    isRootComponent: boolean = false,
-    isInnermost: boolean = true
+    isRootComponent: boolean,
+    config: ColumnComponentModel
   ): ComponentRef<EditorColumnComponent> {
     const column = this.create<EditorColumnComponent>(
       EditorColumnComponent,
       parent,
       isRootComponent
     );
-    column.instance.isInnermost = isInnermost;
+
+    const instance = column.instance;
+
+    instance.isInnermost = config.isInnermost;
+    instance.shouldDisplayLeftResizer = config.shouldDisplayLeftResizer;
+    instance.shouldDisplayRightResizer = config.shouldDisplayRightResizer;
+    instance.flexGrow = config.flexGrow;
+
     return column;
   }
 
@@ -242,7 +328,7 @@ export class EditorService implements EditorServiceModel {
     this.findInTree(component.parentId).children.push(item);
   }
 
-  private findInTree(id: string): TreeItemModel {
+  findInTree(id: string): TreeItemModel {
     return traverse(this._editorTree);
 
     function traverse(current: TreeItemModel): TreeItemModel {
@@ -262,7 +348,7 @@ export class EditorService implements EditorServiceModel {
     }
   }
 
-  public generateId(): string {
+  generateId(): string {
     return uuidv4();
   }
 }

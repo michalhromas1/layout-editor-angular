@@ -10,7 +10,7 @@
   display: grid;
   align-items: center;
   justify-content: center;
-  min-width: 10rem;
+  min-width: var(--content-item-min-width);
 }
 
 ::ng-deep .cdk-drag-preview {
@@ -24,6 +24,12 @@
   align-items: center;
   justify-content: flex-end;
   column-gap: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  column-gap: 2rem;
 }
 
 .grid {

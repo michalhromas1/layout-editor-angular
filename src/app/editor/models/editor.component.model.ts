@@ -6,3 +6,10 @@ export interface EditorComponentModel {
   isRootComponent: boolean;
   slot: ViewContainerRef;
 }
+
+export interface ColumnComponentModel {
+  shouldDisplayLeftResizer: boolean;
+  shouldDisplayRightResizer: boolean;
+  isInnermost: boolean;
+  flexGrow: number;
+}
