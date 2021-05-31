@@ -1,8 +1,14 @@
-<div class="buttons">
-  <button type="button" (click)="editorService.togglePreviewMode()">
-    Toggle Preview Mode
-  </button>
-  <button type="button" (click)="logTree()">Log Tree</button>
+<div class="header">
+  <p class="hint">
+    Drag and drop items to inner layout areas. Select multiple items in areas by
+    clicking on them while holding down ctrl or cmd.
+  </p>
+  <div class="buttons">
+    <button type="button" (click)="editorService.togglePreviewMode()">
+      Toggle Preview Mode
+    </button>
+    <button type="button" (click)="logTree()">Log Tree</button>
+  </div>
 </div>
 
 <div [class.grid]="!(editorService.isPreviewMode$ | async)" cdkDropListGroup>

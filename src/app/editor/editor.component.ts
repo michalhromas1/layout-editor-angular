@@ -27,6 +27,13 @@ export class EditorComponent {
       getNestedProperties(this.editorService.editorTree, 'children', [
         { key: 'type' },
         {
+          key: 'flexGrow',
+          fn: (child) =>
+            child.type === 'column'
+              ? (child.component as EditorColumnComponent).flexGrow
+              : null,
+        },
+        {
           key: 'items',
           fn: (child) =>
             child.type === 'column'

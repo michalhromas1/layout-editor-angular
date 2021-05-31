@@ -1,12 +1,24 @@
 :host {
   display: grid;
-  flex: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
   min-height: 10rem;
 }
 
 .column {
   position: relative;
-  border: 3px solid darkblue;
+  border: var(--column-border-width) solid darkblue;
+
+  &:not(.has-dropped-items) {
+    & > .slot-wrapper {
+      height: 100%;
+    }
+  }
+
+  &:not(.innermost) {
+    padding: var(--editor-column-spacing);
+    height: 100%;
+  }
 
   &:not(.preview) {
     background: #f5f5f5;
@@ -17,6 +29,10 @@
       & > button {
         display: block;
       }
+
+      & > .resizer {
+        display: block;
+      }
     }
 
     &.innermost {
@@ -25,6 +41,8 @@
   }
 
   &.preview {
+    padding: 0;
+
     &:not(.innermost) {
       border: none;
     }
@@ -51,15 +69,16 @@
   }
 }
 
+.fake-content-item {
+  height: 0;
+  visibility: hidden;
+  border: none;
+}
+
 .slot-wrapper {
   display: grid;
   row-gap: var(--editor-column-spacing);
   column-gap: var(--editor-column-spacing);
-
-  &:not(.has-dropped-items) {
-    padding: var(--editor-column-spacing);
-    height: 100%;
-  }
 }
 
 button {
@@ -96,4 +115,22 @@ button {
 
 .dropped-item.selected {
   background: lightblue;
+}
+
+.resizer {
+  position: absolute;
+  top: calc(-1 * (var(--column-border-width)));
+  bottom: calc(-1 * (var(--column-border-width)));
+  background: yellow;
+  width: 0.7rem;
+  cursor: col-resize;
+  display: none;
+
+  &-left {
+    left: calc(-1 * (var(--column-border-width)));
+  }
+
+  &-right {
+    right: calc(-1 * (var(--column-border-width)));
+  }
 }
