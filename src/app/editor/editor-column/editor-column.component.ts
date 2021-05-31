@@ -23,9 +23,11 @@ import { EditorServiceModel } from '../models/editor.service.model';
 interface ResizeDataModel {
   initClientX: number;
   initWidth: number;
+  minWidth: number;
   initFlexGrow: number;
   initNeighbourFlexGrow: number;
   neighbour: EditorColumnComponent;
+  neighbourMinWidth: number;
   direction: Direction;
 }
 
@@ -61,7 +63,6 @@ export class EditorColumnComponent
   private _flexGrow: number;
   private resizeData: ResizeDataModel;
   private readonly CONTENT_PICKER_TAG_NAME = 'app-editor-content-picker';
-  private readonly CONTENT_ITEM_MIN_WIDTH = 126;
 
   @ViewChild('slot', { read: ViewContainerRef, static: true })
   slot: ViewContainerRef;
@@ -110,9 +111,11 @@ export class EditorColumnComponent
     const {
       initClientX,
       initWidth,
+      minWidth,
       initFlexGrow,
       initNeighbourFlexGrow,
       neighbour,
+      neighbourMinWidth,
       direction,
     } = this.resizeData;
 
@@ -124,11 +127,10 @@ export class EditorColumnComponent
     const neighbourTargetFlexGrow = initNeighbourFlexGrow - growth;
 
     const hasColumnReachedMinWidth =
-      growth < 0 &&
-      columnEl.getBoundingClientRect().width <= this.CONTENT_ITEM_MIN_WIDTH;
+      growth < 0 && columnEl.getBoundingClientRect().width <= minWidth;
     const hasNeighbourReachedMinWidth =
       growth > 0 &&
-      neighbourEl.getBoundingClientRect().width <= this.CONTENT_ITEM_MIN_WIDTH;
+      neighbourEl.getBoundingClientRect().width <= neighbourMinWidth;
 
     const hasColumnReachedMinFlexGrow = columnTargetFlexGrow <= 1;
     const hasNeighbourReachedMinFlexGrow = neighbourTargetFlexGrow <= 1;
@@ -279,9 +281,11 @@ export class EditorColumnComponent
     this.resizeData = {
       initClientX: e.clientX,
       initWidth: columnElement.getBoundingClientRect().width,
+      minWidth: this.getMinWidth(this),
       initFlexGrow: this.flexGrow,
       initNeighbourFlexGrow: neighbour.flexGrow,
       neighbour,
+      neighbourMinWidth: this.getMinWidth(neighbour),
       direction,
     };
   }
@@ -295,5 +299,15 @@ export class EditorColumnComponent
     return parentChildren[
       direction === 'left' ? columnIndex - 1 : columnIndex + 1
     ].component as EditorColumnComponent;
+  }
+
+  private getMinWidth(column: EditorColumnComponent): number {
+    const initFlexGrow = column.flexGrow;
+    column.flexGrow = 0;
+    const minWidth = (
+      column.elementRef.nativeElement as HTMLElement
+    ).getBoundingClientRect().width;
+    column.flexGrow = initFlexGrow;
+    return minWidth;
   }
 }
