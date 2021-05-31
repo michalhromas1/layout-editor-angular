@@ -2,6 +2,10 @@
 
 Layout editor in Angular (more advanced Vanilla JS layout-editor).
 
+Demo at: [https://angular-layout-editor.netlify.app/](https://angular-layout-editor.netlify.app/)
+
+---
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.0.7.
 
 ## Development server
