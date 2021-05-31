@@ -28,7 +28,7 @@ export class EditorService implements EditorServiceModel {
   selectedItems: ContentPickerItemModel[] = [];
 
   get editorTree(): Readonly<TreeItemModel> {
-    return makeImmutable(this._editorTree.children[0]);
+    return makeImmutable({ ...this._editorTree.children[0] });
   }
 
   private _editorTree: TreeItemModel = {} as TreeItemModel;
