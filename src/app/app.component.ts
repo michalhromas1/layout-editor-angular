@@ -22,47 +22,48 @@ export class AppComponent {
     },
   ];
 
-  treeCreator: TreeCreatorItemModel = {
-    type: 'column',
-    items: [],
-    children: [
-      {
-        type: 'row',
-        items: [],
-        children: [
-          {
-            type: 'column',
-            items: [{ label: '2' }],
-            children: [],
-            flexGrow: 30,
-          },
-          {
-            type: 'column',
-            items: [],
-            children: [
-              {
-                type: 'row',
-                items: [],
-                children: [
-                  {
-                    type: 'column',
-                    items: [{ label: '2' }],
-                    children: [],
-                    flexGrow: 30,
-                  },
-                  {
-                    type: 'column',
-                    items: [{ label: '1' }, { label: '2' }],
-                    children: [],
-                    flexGrow: 70,
-                  },
-                ],
-              },
-            ],
-            flexGrow: 70,
-          },
-        ],
-      },
-    ],
-  };
+  treeCreator: TreeCreatorItemModel;
+  // treeCreator: TreeCreatorItemModel = {
+  //   type: 'column',
+  //   items: [],
+  //   children: [
+  //     {
+  //       type: 'row',
+  //       items: [],
+  //       children: [
+  //         {
+  //           type: 'column',
+  //           items: [{ label: '2' }],
+  //           children: [],
+  //           flexGrow: 30,
+  //         },
+  //         {
+  //           type: 'column',
+  //           items: [],
+  //           children: [
+  //             {
+  //               type: 'row',
+  //               items: [],
+  //               children: [
+  //                 {
+  //                   type: 'column',
+  //                   items: [{ label: '2' }],
+  //                   children: [],
+  //                   flexGrow: 30,
+  //                 },
+  //                 {
+  //                   type: 'column',
+  //                   items: [{ label: '1' }, { label: '2' }],
+  //                   children: [],
+  //                   flexGrow: 70,
+  //                 },
+  //               ],
+  //             },
+  //           ],
+  //           flexGrow: 70,
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // };
 }
