@@ -1,5 +1,14 @@
+import { FormControl } from '@angular/forms';
+
 export interface ContentPickerItemModel {
-  value: string;
+  label: string;
   id?: string;
   selected?: boolean;
+  control?: FormControl;
+}
+
+export interface ContentPickerInputItemModel {
+  control: FormControl;
+  label: string;
+  instanceCount: number;
 }

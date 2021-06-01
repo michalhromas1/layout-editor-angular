@@ -24,7 +24,7 @@
         [class.selected]="item.selected"
         (click)="onClickDroppedItem($event, item)"
       >
-        {{ item.value }}
+        {{ item.label }}
       </div>
     </div>
 
@@ -34,7 +34,11 @@
         class="content-item fake-content-item"
       ></div>
       <div *ngFor="let item of droppedItems" class="content-item">
-        {{ item.value }}
+        <input
+          *ngIf="editorService.isPreviewMode$ | async"
+          [formControl]="item.control"
+          [value]="item.control.value"
+        />
       </div>
     </div>
   </ng-container>

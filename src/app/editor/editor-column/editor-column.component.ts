@@ -206,10 +206,14 @@ export class EditorColumnComponent
       sourceElement.tagName.toLowerCase() === this.CONTENT_PICKER_TAG_NAME;
 
     if (isFromContentPicker) {
-      const item = {
-        ...source.data[sourceIndex],
+      const sourceItem = source.data[sourceIndex];
+      const inputItem = this.editorService.findInputItem(sourceItem.label);
+
+      const item: ContentPickerItemModel = {
+        ...sourceItem,
         id: this.editorService.generateId(),
         selected: false,
+        control: inputItem.control,
       };
 
       this.droppedItems = [
@@ -218,6 +222,7 @@ export class EditorColumnComponent
         ...this.droppedItems.slice(targetIndex),
       ];
 
+      inputItem.instanceCount++;
       return;
     }
 
