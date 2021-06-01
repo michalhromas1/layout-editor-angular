@@ -222,7 +222,6 @@ export class EditorColumnComponent
         ...this.droppedItems.slice(targetIndex),
       ];
 
-      inputItem.instanceCount++;
       return;
     }
 

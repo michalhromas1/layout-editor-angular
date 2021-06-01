@@ -76,19 +76,13 @@ export class EditorService implements EditorServiceModel {
     if (parentTreeCreatorItem.type === 'column') {
       this.createInputItems(parentTreeCreatorItem.items);
 
-      const droppedItems: ContentPickerItemModel[] =
+      (parent as EditorColumnComponent).droppedItems =
         parentTreeCreatorItem.items.map((i) => ({
           ...i,
           id: this.generateId(),
           selected: false,
           control: this.findInputItem(i.label).control,
         })) || [];
-
-      (parent as EditorColumnComponent).droppedItems = droppedItems;
-
-      for (const item of droppedItems) {
-        this.findInputItem(item.label).instanceCount++;
-      }
     }
 
     parentTreeCreatorItem.children.forEach((child, idx) => {
@@ -122,7 +116,6 @@ export class EditorService implements EditorServiceModel {
           : {
               label: item.label,
               control: new FormControl(item.label),
-              instanceCount: 0,
             };
       }),
     ];
