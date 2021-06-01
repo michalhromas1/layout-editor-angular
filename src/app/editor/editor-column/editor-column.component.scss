@@ -64,6 +64,13 @@
     align-content: flex-start;
   }
 
+  .fake-dropzone {
+    .content-item {
+      align-items: stretch;
+      justify-content: stretch;
+    }
+  }
+
   .dropzone {
     position: absolute;
     top: 0;
@@ -137,4 +144,8 @@ button {
   &-right {
     right: calc(-1 * (var(--column-border-width)));
   }
+}
+
+input {
+  width: 100%;
 }

@@ -6,12 +6,16 @@ import {
   ViewContainerRef,
   ViewRef,
 } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import { makeImmutable } from '../helpers';
 import { EditorColumnComponent } from './editor-column/editor-column.component';
 import { EditorRowComponent } from './editor-row/editor-row.component';
-import { ContentPickerItemModel } from './models/editor-content-picker.model';
+import {
+  ContentPickerInputItemModel,
+  ContentPickerItemModel,
+} from './models/editor-content-picker.model';
 import {
   ColumnComponentModel,
   EditorComponentModel,
@@ -26,6 +30,7 @@ import {
 export class EditorService implements EditorServiceModel {
   hoveredColumn: EditorColumnComponent;
   selectedItems: ContentPickerItemModel[] = [];
+  inputItems: ContentPickerInputItemModel[] = [];
 
   get editorTree(): Readonly<TreeItemModel> {
     return makeImmutable({ ...this._editorTree.children[0] });
@@ -69,12 +74,21 @@ export class EditorService implements EditorServiceModel {
     parentTreeCreatorItem: TreeCreatorItemModel
   ): void {
     if (parentTreeCreatorItem.type === 'column') {
-      (parent as EditorColumnComponent).droppedItems =
+      this.createInputItems(parentTreeCreatorItem.items);
+
+      const droppedItems: ContentPickerItemModel[] =
         parentTreeCreatorItem.items.map((i) => ({
           ...i,
           id: this.generateId(),
           selected: false,
+          control: this.findInputItem(i.label).control,
         })) || [];
+
+      (parent as EditorColumnComponent).droppedItems = droppedItems;
+
+      for (const item of droppedItems) {
+        this.findInputItem(item.label).instanceCount++;
+      }
     }
 
     parentTreeCreatorItem.children.forEach((child, idx) => {
@@ -93,6 +107,29 @@ export class EditorService implements EditorServiceModel {
 
       this.createNestedTreeItem(created.instance, child);
     });
+  }
+
+  createInputItems(items: ContentPickerItemModel[]): void {
+    const uniqueItems = items.filter((item) => !this.findInputItem(item.label));
+
+    this.inputItems = [
+      ...this.inputItems,
+      ...uniqueItems.map((item) => {
+        const existingItem = this.findInputItem(item.label);
+
+        return existingItem
+          ? existingItem
+          : {
+              label: item.label,
+              control: new FormControl(item.label),
+              instanceCount: 0,
+            };
+      }),
+    ];
+  }
+
+  findInputItem(label: string): ContentPickerInputItemModel {
+    return this.inputItems.find((item) => item.label === label);
   }
 
   addRow(column: EditorColumnComponent): void {

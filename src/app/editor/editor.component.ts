@@ -37,7 +37,12 @@ export class EditorComponent {
           key: 'items',
           fn: (child) =>
             child.type === 'column'
-              ? (child.component as EditorColumnComponent).droppedItems
+              ? (child.component as EditorColumnComponent).droppedItems.map(
+                  (item) => ({
+                    label: item.label,
+                    value: item.control.value,
+                  })
+                )
               : [],
         },
       ])
@@ -52,15 +57,30 @@ export class EditorComponent {
     }
 
     if (!this.editorService.selectedItems.length) {
+      const droppedItem = previousContainer.data[previousIndex];
+
+      this.decreaseInputItemInstanceCount(droppedItem.label);
       previousContainer.data.splice(previousIndex, 1);
       return;
     }
 
     for (const item of this.editorService.selectedItems) {
       const idx = previousContainer.data.findIndex((i) => i.id === item.id);
+
+      this.decreaseInputItemInstanceCount(item.label);
       previousContainer.data.splice(idx, 1);
     }
 
     this.editorService.selectedItems = [];
+  }
+
+  private decreaseInputItemInstanceCount(inputItemLabel: string): void {
+    const inputItem = this.editorService.findInputItem(inputItemLabel);
+
+    inputItem.instanceCount--;
+
+    if (inputItem.instanceCount === 0) {
+      inputItem.control.setValue(inputItem.label);
+    }
   }
 }
