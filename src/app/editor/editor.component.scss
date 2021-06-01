@@ -8,9 +8,10 @@
   background: lightgreen;
   height: 5rem;
   display: grid;
+  min-width: var(--content-item-min-width);
+  padding: 1rem;
   align-items: center;
   justify-content: center;
-  min-width: var(--content-item-min-width);
 }
 
 ::ng-deep .cdk-drag-preview {
