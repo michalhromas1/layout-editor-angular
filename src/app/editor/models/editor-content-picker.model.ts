@@ -10,5 +10,4 @@ export interface ContentPickerItemModel {
 export interface ContentPickerInputItemModel {
   control: FormControl;
   label: string;
-  instanceCount: number;
 }
