@@ -144,14 +144,33 @@ export class EditorService implements EditorServiceModel {
     if (rows.length === 1) {
       const firstRow = rows[0];
 
+      if (firstRow.children.length === this.GRID_SIZE) {
+        return;
+      }
+
       const targetChildrenCount = firstRow.children.length + 1;
       const targetFlexGrow = this.GRID_SIZE / targetChildrenCount;
 
+      let isChildLessThanMininum = false;
+
       for (const child of firstRow.children) {
         const childComponent = child.component as EditorColumnComponent;
+        const targetChildFlexGrow =
+          ((this.GRID_SIZE - targetFlexGrow) / this.GRID_SIZE) *
+          childComponent.flexGrow;
 
-        childComponent.flexGrow =
-          ((this.GRID_SIZE - targetFlexGrow) / 100) * childComponent.flexGrow;
+        if ((isChildLessThanMininum = targetChildFlexGrow < 1)) {
+          break;
+        }
+
+        childComponent.flexGrow = targetChildFlexGrow;
+      }
+
+      if (isChildLessThanMininum) {
+        for (const child of firstRow.children) {
+          const childComponent = child.component as EditorColumnComponent;
+          childComponent.flexGrow = 1;
+        }
       }
 
       (
@@ -266,7 +285,7 @@ export class EditorService implements EditorServiceModel {
     instance.isInnermost = config.isInnermost;
     instance.shouldDisplayLeftResizer = config.shouldDisplayLeftResizer;
     instance.shouldDisplayRightResizer = config.shouldDisplayRightResizer;
-    instance.flexGrow = config.flexGrow;
+    instance.flexGrow = config.flexGrow >= 1 ? config.flexGrow : 1;
 
     return column;
   }
