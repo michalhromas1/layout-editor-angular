@@ -2,6 +2,7 @@ import {
   ComponentFactoryResolver,
   ComponentRef,
   Injectable,
+  NgZone,
   Type,
   ViewContainerRef,
   ViewRef,
@@ -43,7 +44,10 @@ export class EditorService implements EditorServiceModel {
 
   private readonly GRID_SIZE: number = 100;
 
-  constructor(private componentFactoryResolver: ComponentFactoryResolver) {}
+  constructor(
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private ngZone: NgZone
+  ) {}
 
   createTree(
     rootRow: EditorRowComponent,
@@ -126,99 +130,103 @@ export class EditorService implements EditorServiceModel {
   }
 
   addRow(column: EditorColumnComponent): void {
-    const hasRows = !!this.findInTree(column.id).children.length;
+    this.ngZone.runOutsideAngular(() => {
+      const hasRows = !!this.findInTree(column.id).children.length;
 
-    if (!hasRows) {
+      if (!hasRows) {
+        const row = this.createRow(column);
+        const newColumn = this.createColumn(row.instance, false, {
+          flexGrow: this.GRID_SIZE,
+          isInnermost: true,
+          shouldDisplayLeftResizer: false,
+          shouldDisplayRightResizer: false,
+        });
+        newColumn.instance.droppedItems = column.droppedItems;
+      }
+
       const row = this.createRow(column);
-      const newColumn = this.createColumn(row.instance, false, {
+      this.createColumn(row.instance, false, {
         flexGrow: this.GRID_SIZE,
         isInnermost: true,
         shouldDisplayLeftResizer: false,
         shouldDisplayRightResizer: false,
       });
-      newColumn.instance.droppedItems = column.droppedItems;
-    }
-
-    const row = this.createRow(column);
-    this.createColumn(row.instance, false, {
-      flexGrow: this.GRID_SIZE,
-      isInnermost: true,
-      shouldDisplayLeftResizer: false,
-      shouldDisplayRightResizer: false,
     });
   }
 
   addColumn(column: EditorColumnComponent): void {
-    const rows = this.findInTree(column.id).children;
+    this.ngZone.runOutsideAngular(() => {
+      const rows = this.findInTree(column.id).children;
 
-    if (!rows.length) {
-      const row = this.createRow(column);
+      if (!rows.length) {
+        const row = this.createRow(column);
 
-      const firstColumn = this.createColumn(row.instance, false, {
-        flexGrow: this.GRID_SIZE / 2,
-        isInnermost: true,
-        shouldDisplayLeftResizer: false,
-        shouldDisplayRightResizer: true,
-      });
-      firstColumn.instance.droppedItems = column.droppedItems;
+        const firstColumn = this.createColumn(row.instance, false, {
+          flexGrow: this.GRID_SIZE / 2,
+          isInnermost: true,
+          shouldDisplayLeftResizer: false,
+          shouldDisplayRightResizer: true,
+        });
+        firstColumn.instance.droppedItems = column.droppedItems;
 
-      this.createColumn(row.instance, false, {
-        flexGrow: this.GRID_SIZE / 2,
-        isInnermost: true,
-        shouldDisplayLeftResizer: true,
-        shouldDisplayRightResizer: false,
-      });
-      return;
-    }
-
-    if (rows.length === 1) {
-      const firstRow = rows[0];
-
-      if (firstRow.children.length === this.GRID_SIZE) {
+        this.createColumn(row.instance, false, {
+          flexGrow: this.GRID_SIZE / 2,
+          isInnermost: true,
+          shouldDisplayLeftResizer: true,
+          shouldDisplayRightResizer: false,
+        });
         return;
       }
 
-      const targetChildrenCount = firstRow.children.length + 1;
-      const targetFlexGrow = this.GRID_SIZE / targetChildrenCount;
+      if (rows.length === 1) {
+        const firstRow = rows[0];
 
-      let isChildLessThanMininum = false;
-
-      for (const child of firstRow.children) {
-        const childComponent = child.component as EditorColumnComponent;
-        const targetChildFlexGrow =
-          ((this.GRID_SIZE - targetFlexGrow) / this.GRID_SIZE) *
-          childComponent.flexGrow;
-
-        if ((isChildLessThanMininum = targetChildFlexGrow < 1)) {
-          break;
+        if (firstRow.children.length === this.GRID_SIZE) {
+          return;
         }
 
-        childComponent.flexGrow = targetChildFlexGrow;
-      }
+        const targetChildrenCount = firstRow.children.length + 1;
+        const targetFlexGrow = this.GRID_SIZE / targetChildrenCount;
 
-      if (isChildLessThanMininum) {
+        let isChildLessThanMininum = false;
+
         for (const child of firstRow.children) {
           const childComponent = child.component as EditorColumnComponent;
-          childComponent.flexGrow = 1;
+          const targetChildFlexGrow =
+            ((this.GRID_SIZE - targetFlexGrow) / this.GRID_SIZE) *
+            childComponent.flexGrow;
+
+          if ((isChildLessThanMininum = targetChildFlexGrow < 1)) {
+            break;
+          }
+
+          childComponent.flexGrow = targetChildFlexGrow;
         }
+
+        if (isChildLessThanMininum) {
+          for (const child of firstRow.children) {
+            const childComponent = child.component as EditorColumnComponent;
+            childComponent.flexGrow = 1;
+          }
+        }
+
+        (
+          firstRow.children[firstRow.children.length - 1]
+            .component as EditorColumnComponent
+        ).shouldDisplayRightResizer = true;
+
+        this.createColumn(firstRow.component as EditorRowComponent, false, {
+          flexGrow: targetFlexGrow,
+          isInnermost: true,
+          shouldDisplayLeftResizer: true,
+          shouldDisplayRightResizer: false,
+        });
+
+        return;
       }
 
-      (
-        firstRow.children[firstRow.children.length - 1]
-          .component as EditorColumnComponent
-      ).shouldDisplayRightResizer = true;
-
-      this.createColumn(firstRow.component as EditorRowComponent, false, {
-        flexGrow: targetFlexGrow,
-        isInnermost: true,
-        shouldDisplayLeftResizer: true,
-        shouldDisplayRightResizer: false,
-      });
-
-      return;
-    }
-
-    this.splitColumnWithRows(column);
+      this.splitColumnWithRows(column);
+    });
   }
 
   private splitColumnWithRows(column: EditorColumnComponent): void {
